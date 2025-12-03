@@ -95,7 +95,7 @@ resource ext 'Microsoft.Compute/virtualMachines/extensions@2020-12-01' = {
     autoUpgradeMinorVersion: true
     protectedSettings:{}
     settings: {
-        commandToExecute: 'powershell -ExecutionPolicy Unrestricted -Command "Add-WindowsFeature Web-Server; Add-Content -Path C:\\inetpub\\wwwroot\\Default.htm -Value $($env:computername); Invoke-WebRequest -Uri https://raw.githubusercontent.com/madedroo/virtual-network-tap-lab/main/loop.bat -OutFile C:\\Users\\Public\\Desktop\\loop.bat"'
+        commandToExecute: 'powershell -ExecutionPolicy Unrestricted -Command "Add-WindowsFeature Web-Server; Add-Content -Path C:\\inetpub\\wwwroot\\Default.htm -Value $($env:computername); Invoke-WebRequest -Uri https://raw.githubusercontent.com/mddazure/virtual-network-tap-lab/refs/heads/main/templates/loop.bat -OutFile C:\\Users\\Public\\Desktop\\loop.bat"'
     }
   }  
 }
