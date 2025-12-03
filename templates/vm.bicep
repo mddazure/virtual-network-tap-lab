@@ -95,13 +95,10 @@ resource ext 'Microsoft.Compute/virtualMachines/extensions@2020-12-01' = {
     autoUpgradeMinorVersion: true
     protectedSettings:{}
     settings: {
-        //commandToExecute: 'powershell -ExecutionPolicy Unrestricted -Command "Invoke-WebRequest -Uri https://npcap.com/dist/npcap-1.79.exe -OutFile C:\\Users\\AzureAdmin\\npcap-1.79.exe; Start-Process -FilePath C:\\Users\\AzureAdmin\\npcap-1.79.exe -ArgumentList \'/S\' -Wait; Invoke-WebRequest -Uri https://2.na.dl.wireshark.org/win64/Wireshark-latest-x64.exe -OutFile C:\\Users\\AzureAdmin\\Wireshark-latest-x64.exe; Start-Process -FilePath C:\\Users\\AzureAdmin\\Wireshark-latest-x64.exe -ArgumentList \'/S\' -Wait"'
-        commandToExecute: 'powershell -ExecutionPolicy Unrestricted Add-WindowsFeature Web-Server; powershell -ExecutionPolicy Unrestricted Add-Content -Path "C:\\inetpub\\wwwroot\\Default.htm" -Value $($env:computername)'
+        commandToExecute: 'powershell -ExecutionPolicy Unrestricted -Command "Add-WindowsFeature Web-Server; Add-Content -Path C:\\inetpub\\wwwroot\\Default.htm -Value $($env:computername); Invoke-WebRequest -Uri https://raw.githubusercontent.com/madedroo/virtual-network-tap-lab/main/loop.bat -OutFile C:\\Users\\Public\\Desktop\\loop.bat"'
     }
   }  
 }
-
-
 output nicId string = vm.properties.networkProfile.networkInterfaces[0].id
 output vmId string = vm.id
 output vmName string = vm.name
