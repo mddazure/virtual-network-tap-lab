@@ -75,7 +75,7 @@ module peering 'peering.bicep' = {
   }
 }
 module bastion 'bastion.bicep' = {
-  name: 'bastion-deployment'
+  name: 'bastion'
     scope: rg
   params: {
     bastionSubnetid: svnet.outputs.subnet3Id
