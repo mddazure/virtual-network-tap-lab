@@ -22,7 +22,7 @@ resource bastion 'Microsoft.Network/bastionHosts@2024-05-01' ={
   name: 'bastion'
   location: location
   sku: {
-    name: 'Developer'
+    name: 'Standard'
   }
   properties: {
     ipConfigurations: [
