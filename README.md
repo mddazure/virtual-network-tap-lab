@@ -44,4 +44,25 @@ username: `AzureAdmin`
 password: `vnettap-2025%`
 
 # Observe
-Log on to 
+Log on to `vm1` via Bastion and start the `loop.bat` batch file found on the Desktop. This will poll the web servers on the other VMs and `ipconfig.io`, generating network traffic.
+
+Log on to `vmtarget` via Bastion and install [Wireshark](https://www.wireshark.org/download.html), keeping the installer's default settings. 
+
+Start Wireshark, enter `udp port 4789` in the Capture filter and start the capture by clicking the shark's fin in the top left corner.
+
+![image](/images/wireshark-startup.png)
+
+The capture filter on UDP port 4789 causes Wireshark to only capture the VXLAN encapsulated traffic forwarded by VTAP. Wireshark is configured to automatically decode VXLAN and it displays the actual traffic to and from `vm1`, which is set up as the (only) VTAP source. 
+
+:point_right: Close the Bastion session to `vm1`, as the  traffic between the VM and Bastion is also captured and it convolutes the Wireshark display.
+
+The wireshark capture panel shows full TCP and HTTP exchanges, including the TCP handshake, between `vm1` and the other VMs, and https://ipconfig.io.
+
+![image](/images/wireshark-capture.png)
+
+The lines in the detail panel below can be expanded to show the details of the VXLAN encapsulation. The outer IP packets, encapsulating the VXLAN frames in UDP, originate from the source VM's IP address, with the target VM's address as the destination.
+The VXLAN frames contain all the details of the original Ethernet frames, and the IP packets within those, exchanged between `vm1` and the destinations it speaks with.
+
+![image](/images/wireshark-detail.png)
+
+
