@@ -6,6 +6,8 @@ param location string
 param subnetId string
 param privateIpAddress string = ''
 param vtapId string = ''
+param lbbepId string = ''
+param extension bool = false
 
 var imagePublisher = 'MicrosoftWindowsServer'
 var imageOffer = 'WindowsServer'
@@ -31,12 +33,17 @@ resource nic 'Microsoft.Network/networkInterfaces@2020-08-01' = {
           subnet: {
             id: subnetId
           }
+          loadBalancerBackendAddressPools: lbbepId != '' ? [
+            {
+              id: lbbepId
+            }
+          ] : []  
         }
       }
     ]
   }
 }
-resource tapconfig 'Microsoft.Network/networkInterfaces/tapConfigurations@2024-07-01' = if (vtapId != '') {
+resource tap1config 'Microsoft.Network/networkInterfaces/tapConfigurations@2024-07-01' = if (vtapId != '') {
   name: '${vmName}-tapconfig'
   parent: nic
   properties: {
@@ -84,7 +91,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2020-12-01' = {
   }
 }
 
-resource ext 'Microsoft.Compute/virtualMachines/extensions@2020-12-01' = {
+resource ext 'Microsoft.Compute/virtualMachines/extensions@2020-12-01' = if (extension) {
   name: 'ext'
   parent: vm
   location: location

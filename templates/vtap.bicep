@@ -1,15 +1,19 @@
 param location string
-param destinationNicId string
-
+param destinationNicId string = ''
+param destinationFrontendIpConfigId string = ''
+param vtapname string
 
 resource tap 'Microsoft.Network/virtualNetworkTaps@2025-01-01' = {
-  name: 'vnettap'
+  name: vtapname
   location: location
   properties: {
-    destinationNetworkInterfaceIPConfiguration: {
+    destinationLoadBalancerFrontEndIPConfiguration: destinationFrontendIpConfigId != '' ? {
+      id: destinationFrontendIpConfigId
+    } : null
+    destinationNetworkInterfaceIPConfiguration: destinationNicId != '' ? {
       name: 'ipv4config0'
       id: '${destinationNicId}/ipConfigurations/ipv4config0'
-    }
+    } : null
     destinationPort: 4789
   }
 }

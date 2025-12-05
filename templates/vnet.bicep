@@ -8,6 +8,7 @@ param subnet2Name string
 param subnet2AddressPrefix string
 param subnet3Name string
 param subnet3AddressPrefix string
+param natgwId string = ''
 
 
 resource vnet 'Microsoft.Network/virtualNetworks@2020-08-01' = {
@@ -20,17 +21,25 @@ resource vnet 'Microsoft.Network/virtualNetworks@2020-08-01' = {
       ]
     }
     subnets: [
-      {
+            {
         name: subnet1Name
-        properties: {
+        properties: union({
           addressPrefix: subnet1AddressPrefix
-        }
+        }, natgwId != '' ? {
+          natGateway: {
+            id: natgwId
+          }
+        } : {})
       }
       {
         name: subnet2Name
-        properties: {
+        properties: union({
           addressPrefix: subnet2AddressPrefix
-        }
+        }, natgwId != '' ? {
+          natGateway: {
+            id: natgwId
+          }
+        } : {})
       }
       {
         name: subnet3Name

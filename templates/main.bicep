@@ -1,4 +1,4 @@
-param rgName string = 'vtap-lab'
+param rgName string = 'vtap-lab-lb'
 
 param location string = 'germanywestcentral'
 
@@ -20,7 +20,8 @@ param tsubnet2AddressPrefix string = '10.1.2.0/24'
 param tsubnet3Name string = 'AzureBastionSubnet'
 param tsubnet3AddressPrefix string = '10.1.3.0/24'
 
-param vmtargetIp string = '10.1.1.4'
+param vmtarget1Ip string = '10.1.1.4'
+param vmtarget2Ip string = '10.1.1.5'
 param vm1Ip string = '10.0.2.4'
 param vm2Ip string = '10.0.2.5'
 param vm3Ip string = '10.0.2.6'
@@ -33,6 +34,22 @@ targetScope = 'subscription'
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: rgName
   location: location
+}
+module tnatgw 'natgw.bicep' = {
+  name: 'tnatgw-deployment'
+  scope: rg
+  params: {
+    location: location
+    vnetName: tvnetName
+  }
+}
+module snatgw 'natgw.bicep' = {
+  name: 'snatgw-deployment'
+  scope: rg
+  params: {
+    location: location
+    vnetName: tvnetName
+  }
 }
 module svnet 'vnet.bicep' = {
   name: 'svnet-deployment'
@@ -47,7 +64,8 @@ module svnet 'vnet.bicep' = {
     subnet2AddressPrefix: ssubnet2AddressPrefix
     subnet3Name: ssubnet3Name
     subnet3AddressPrefix: ssubnet3AddressPrefix
-    }
+    natgwId: snatgw.outputs.natgwId
+  }
 }
 module tvnet 'vnet.bicep' = {
   name: 'tvnet-deployment'
@@ -62,6 +80,7 @@ module tvnet 'vnet.bicep' = {
     subnet2AddressPrefix: tsubnet2AddressPrefix
     subnet3Name: tsubnet3Name
     subnet3AddressPrefix: tsubnet3AddressPrefix
+    natgwId: tnatgw.outputs.natgwId
     }
 }
 module peering 'peering.bicep' = {
@@ -82,18 +101,46 @@ module bastion 'bastion.bicep' = {
     location: location
   }
 }
-module vmtarget 'vm.bicep' = {
-  name: 'vmtarget-deployment'
+/*
+module lb 'lb.bicep' = {
+  name: 'loadbalancer-deployment'
     scope: rg
   params: {
-    vmName: 'vmtarget'
+    location: location
+    lbName: 'vtap-lb'
+    vnetSubnetId: tvnet.outputs.subnet2Id
+  }
+}
+*/
+module vmtarget1 'vm.bicep' = {
+  name: 'vmtarget1-deployment'
+    scope: rg
+  params: {
+    vmName: 'vmtarget1'
     adminUser: adminUser
     adminPw: adminPw
     location: location
     subnetId: tvnet.outputs.subnet1Id
-    privateIpAddress: vmtargetIp
+    privateIpAddress: vmtarget1Ip
+    extension: false
+    }
+}
+/*
+module vmtarget2 'vm.bicep' = {
+  name: 'vmtarget2-deployment'
+    scope: rg
+  params: {
+    vmName: 'vmtarget2'
+    adminUser: adminUser
+    adminPw: adminPw
+    location: location
+    subnetId: tvnet.outputs.subnet1Id
+    privateIpAddress: vmtarget2Ip
+    lbbepId: lb.outputs.lbBackendPoolId
+    extension: false
   }
 }
+*/
 module vm1 'vm.bicep' = {
   name: 'vm1-deployment'
   scope: rg
@@ -104,7 +151,8 @@ module vm1 'vm.bicep' = {
     location: location
     subnetId: svnet.outputs.subnet2Id
     privateIpAddress: vm1Ip
-    vtapId: vtap.outputs.tapId
+    vtapId: vtapvm.outputs.tapId
+    extension: true
   }
 }
 module vm2 'vm.bicep' = {
@@ -117,6 +165,7 @@ module vm2 'vm.bicep' = {
     location: location
     subnetId: svnet.outputs.subnet2Id
     privateIpAddress: vm2Ip
+    extension: true
   }
 }
 
@@ -130,13 +179,25 @@ module vm3 'vm.bicep' = {
     location: location
     subnetId: svnet.outputs.subnet2Id
     privateIpAddress: vm3Ip
+    extension: true
   }
 }
-module vtap 'vtap.bicep' = {
-  name: 'vtap-deployment'
+module vtapvm 'vtap.bicep' = {
+  name: 'vtapvm-deployment'
     scope: rg
   params: {
+    vtapname: 'vtapvm'
     location: location
-    destinationNicId: vmtarget.outputs.nicId
+    destinationNicId: vmtarget1.outputs.nicId
   }
 }
+/*
+module vtaplb 'vtap.bicep' = {
+  name: 'vtaplb-deployment'
+    scope: rg
+  params: {
+    vtapname: 'vtaplb'
+    location: location
+    destinationFrontendIpConfigId: lb.outputs.lbFrontendIpConfigId
+  }
+}*/
